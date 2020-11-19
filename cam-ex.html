@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]>      <html class="no-js"> <!--<![endif]-->
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title></title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="">
+
+    <script src="BigInteger.min.js"></script>
+    <script src="zxing-pdf417.js"></script>
+
+</head>
+
+<body>
+    <!--[if lt IE 7]>
+            <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="#">upgrade your browser</a> to improve your experience.</p>
+        <![endif]-->
+        <div id='txt_res'></div>
+    <video id="video" width="640" height="480" autoplay></video>
+    <button id="snap">Snap Photo</button>
+    <canvas id="canvas" width="640" height="480"></canvas>
+    <img src="./reverse_side_sample.jpg" id='video_img'/>
+
+    <script type="text/javascript">
+        document.getElementById('txt_res').innerHTML='helllo';
+        // Grab elements, create settings, etc.
+        var video = document.getElementById('video');
+        var img = document.getElementById('video_img');
+
+        // Get access to the camera!
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+            // Not adding `{ audio: true }` since we only want video now
+            navigator.mediaDevices.getUserMedia({ video: true }).then(function (stream) {
+                //video.src = window.URL.createObjectURL(stream);
+                video.srcObject = stream;
+                video.play();
+            });
+        }
+        // Elements for taking the snapshot
+       
+        function doScan(image) {
+                    var
+                            canvas = document.createElement('canvas'),
+                            canvas_context = canvas.getContext('2d'),
+                            source,
+                            binarizer,
+                            bitmap;
+
+
+                    canvas.width = image.naturalWidth;
+                    canvas.height = image.naturalHeight;
+                    console.log(`w=${image.naturalWidth},h=${image.naturalHeight} `)
+                    canvas_context.drawImage(image, 0, 0, canvas.width, canvas.height);
+                   // sharpen(canvas_context,canvas.width, canvas.height,0.5);
+
+                    try {
+                        source = new ZXing.BitmapLuminanceSource(canvas_context, image);
+                        binarizer = new ZXing.Common.HybridBinarizer(source);
+                        bitmap = new ZXing.BinaryBitmap(binarizer);
+                        console.log(JSON.stringify(ZXing.PDF417.PDF417Reader.decode(bitmap, null, false), null, 4));
+                    
+                    } catch (err) {
+                        console.log(err);
+                    }
+                }
+
+        function get_bitmap_from_video(video) {
+            
+            var canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            var ctx = canvas.getContext('2d');
+            ctx.drawImage(video, 0, 0);
+            return canvas.toDataURL('image/png');
+        }
+
+        // Trigger photo take
+        document.getElementById("snap").addEventListener("click", function () {
+            var canvas = document.getElementById('canvas');
+             var context = canvas.getContext('2d');
+            context.drawImage(video, 0, 0, 640, 480);
+            let aa=get_bitmap_from_video(video);
+            img.src = aa;
+            console.log(aa);
+            doScan(img);
+        });
+
+        setInterval(function(){
+            console.log('--------------------------------');
+            var canvas = document.getElementById('canvas');
+             var context = canvas.getContext('2d');
+            context.drawImage(video, 0, 0, 640, 480);
+            let aa=get_bitmap_from_video(video);
+            img.src = aa;
+            //console.log(aa);
+            doScan(img);
+
+        },500);
+
+       
+
+
+
+    </script>
+</body>
+
+</html>

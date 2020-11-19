@@ -1,0 +1,93 @@
+<!--
+    
+    https://brandonmpetty.github.io/Doxa/WebAssembly/
+
+-->
+
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title></title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="">
+</head>
+
+<body>
+
+
+    <image src='ex2.png' id='imgsrc'></image>
+    <canvas id='canvas_img'></canvas>
+    <script type='text/javascript' src='webasm/doxaWasm.js'></script>
+    <script type='text/javascript' src='webasm/doxa.js'></script>
+
+
+    <script>
+
+        function drawImgToCanvas(img, id) {
+            let canvas = document.getElementById(id);
+            let ctx = canvas.getContext('2d');
+
+            canvas.width = img.width;
+            canvas.height = img.height;
+
+            ctx.drawImage(img, 0, 0);
+        }
+
+        drawImgToCanvas(document.getElementById('imgsrc'), 'canvas_img');
+
+        Module.onRuntimeInitialized = async _ => {
+            let canvasId ='canvas_img';
+            // load available algorithms
+            let algorithms = Doxa.getAlgorithms();
+            let currentAlgorithm = algorithms[Module.Binarization.Algorithms.OTSU];
+
+            let canvas = document.getElementById(canvasId);
+            let ctx = canvas.getContext('2d');
+            let imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+
+            // Build 8-bit Doxa Image objects to use in our library
+            let srcImage = new Doxa.Image().loadFromCanvas(imageData);
+            let dstImage = new Doxa.Image(srcImage.width, srcImage.height);
+
+
+            // Convert to Binary
+            Doxa.initialize(Module.Binarization.Algorithms.OTSU, srcImage);
+            // Convert to Binary
+			Doxa.toBinary(dstImage, {});
+
+            drawImgToCanvas(dstImage,canvasId);
+
+
+
+            // let image = document.getElementById('id_img');
+            // let srcImage=image;
+
+            // // load available algorithms
+            // let algorithms = Doxa.getAlgorithms();
+
+            // // Initialize our destination/binary image
+            // dstImage = new Doxa.Image(image.width, image.height);
+            // // Convert the color image to binary and show on the other Canvas
+            // //selectAlgorithm(Module.Binarization.Algorithms.OTSU);
+            // // The order of this call does matter since we are dealing with a global.
+            // let currentAlgorithm = algorithms[Module.Binarization.Algorithms.OTSU];
+
+            // // Convert to Binary
+            // dstImage= Doxa.toBinary(dstImage, currentAlgorithm.params);
+
+
+
+        };
+
+
+
+
+    </script>
+
+
+</body>
+
+</html>
